@@ -104,9 +104,11 @@ else
 fi
 
 #Get Master pod details
-master_pod=$(kubectl get pod -n "${namespace}" | grep jmeter-master | awk '{print $1}')
 logit "INFO" "Waiting for master pod to be available"
 while [[ $(kubectl -n ${namespace} get pods -l jmeter_mode=master -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do echo "$(kubectl -n ${namespace} get pods -l jmeter_mode=master )" && sleep 1; done
+
+master_pod=$(kubectl get pod -n "${namespace}" | grep jmeter-master | awk '{print $1}')
+
 
 #Get Slave pod details
 slave_pods=($(kubectl get pods -n "${namespace}" | grep jmeter-slave | grep Running | awk '{print $1}'))
@@ -159,7 +161,7 @@ logit "INFO" "Installing needed plugins on slave pods"
 {
     echo "cd ${jmeter_directory}"
     echo "sh PluginsManagerCMD.sh install-for-jmx ${jmx} > plugins-install.out 2> plugins-install.err"
-    echo "jmeter-server -Dserver.rmi.localport=50000 -Dserver_port=1099 -Jserver.rmi.ssl.disable=true >> jmeter-injector.out 2>> jmeter-injector.err &"
+    echo "jmeter-server -JinstanceZone=\${NODE_NAME} -Dserver.rmi.localport=50000 -Dserver_port=1099 -Jserver.rmi.ssl.disable=true >> jmeter-injector.out 2>> jmeter-injector.err &"
     echo "trap 'kill -10 1' EXIT INT TERM"
     echo "java -jar /opt/jmeter/apache-jmeter/lib/jolokia-java-agent.jar start JMeter >> jmeter-injector.out 2>> jmeter-injector.err"
     echo "wait"
@@ -190,8 +192,10 @@ if [ -n "${csv}" ]; then
                 elif [ ${slave_digit} -eq 3 ] && [ ${i} -ge 10 ]; then
                     j=0${i}
                 elif [ ${slave_digit} -eq 3 ] && [ ${i} -ge 100 ]; then
+                    j=${i}
+                else 
                     j=${i}                    
-                fi
+            fi
 
                 printf "Copy %s to %s on %s\n" "${j}" "${csvfile}" "${slave_pods[$i]}"
                 kubectl -n "${namespace}" cp -c jmslave "${dataset_dir}/${j}" "${slave_pods[$i]}":"${jmeter_directory}/${csvfile}" &

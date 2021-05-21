@@ -76,6 +76,10 @@ spec:
         env:
         - name: MODE
           value: "SLAVE"
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
         command: ["/bin/bash"]
         args: ["-c", "trap 'exit 0' SIGUSR1 && while true; do sleep 30;done"]
         ports:

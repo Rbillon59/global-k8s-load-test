@@ -5,7 +5,7 @@ metadata:
   labels:
     type: mock
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       type: mock
@@ -81,13 +81,6 @@ spec:
           mountPath: /home/wiremock/mappings
         - name: wiremock-file
           mountPath: /home/wiremock/__files
-        resources:
-          requests:
-            memory: "1024m"
-            cpu: "1024m"
-          limits:
-            memory: "1024m"
-            cpu: "1024m"
         livenessProbe:
           exec:
             command:

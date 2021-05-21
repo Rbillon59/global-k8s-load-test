@@ -22,11 +22,11 @@ spec:
         name: grafana
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "512m"
+            memory: "256Mi"
+            cpu: "256m"
           limits:
-            memory: "512Mi"
-            cpu: "512m"
+            memory: "256Mi"
+            cpu: "256m"
         volumeMounts:
           - name: data-dir
             mountPath: /var/lib/grafana/

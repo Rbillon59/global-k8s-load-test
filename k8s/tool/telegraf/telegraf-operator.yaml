@@ -107,10 +107,10 @@ spec:
               protocol: TCP
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "256m"
+              memory: "128Mi"
+              cpu: "128m"
             limits:
-              memory: "256Mi"
+              memory: "128Mi"
               cpu: "256m"
           volumeMounts:
             - name: certs
