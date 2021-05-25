@@ -55,7 +55,7 @@ kind: CronJob
 metadata:
   name: jobs-cleanup
 spec:
-  schedule: "*/1 * * * *"
+  schedule: "*/10 * * * *"
   successfulJobsHistoryLimit: 1
   jobTemplate:
     spec:

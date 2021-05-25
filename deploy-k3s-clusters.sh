@@ -160,14 +160,9 @@ if [ "$(gcloud --project="${gcp_project_id}" --format "value(name)" compute netw
     gcloud compute networks create "${NETWORK_NAME}" --project="${gcp_project_id}" --subnet-mode=auto --mtu=1460 --bgp-routing-mode=global
 
     logit "INFO" "Applying firewall rules to the VPC to allow instances peering inside the k3s cluster"
-    # logit "INFO" "Allowing internal network exchanges"
-    # gcloud compute firewall-rules create ${NETWORK_NAME}-allow-internal --project=${gcp_project_id}--network=projects/${gcp_project_id}/global/networks/${NETWORK_NAME} --direction=INGRESS --priority=65534 --source-ranges=10.128.0.0/9 --action=ALLOW --rules=all
 
-    logit "INFO" "Allowing SSH on port 22 for all instances tagged k3s inside the ${NETWORK_NAME}"
-    gcloud compute firewall-rules create "${NETWORK_NAME}-allow-ssh" --project="${gcp_project_id}" --network="projects/${gcp_project_id}/global/networks/${NETWORK_NAME}" --direction=INGRESS --priority=65534 --source-ranges=0.0.0.0/0 --action=ALLOW --rules=tcp:22
-
-    logit "INFO" "Allowing k3s needed ports for all instances tagged k3s inside the ${NETWORK_NAME}"
-    gcloud compute --project="${gcp_project_id}" firewall-rules create k3s-firewall-rules --direction=INGRESS --priority=1000 "--network=${NETWORK_NAME}" --action=ALLOW --rules=tcp:10250,tcp:6443 --source-ranges=0.0.0.0/0 --target-tags=k3s
+    logit "WARN" "Opening all ports to all k3s instances"
+    gcloud compute --project=${gcp_project_id} firewall-rules create allow-all --direction=INGRESS --priority=1000 --network=${NETWORK_NAME} --action=ALLOW --rules=all --source-ranges=0.0.0.0/0 --target-tags=${MACHINE_NETWORK_TAG}
 else
     logit "INFO" "Network ${NETWORK_NAME} already exist, skipping network creation"
 fi
@@ -210,6 +205,11 @@ logit "WARN" "The master will always be the instance inside the first zone insid
 export MASTER_IP=$(gcloud --project="${gcp_project_id}" --format="value(networkInterfaces[0].accessConfigs[0].natIP)" compute instances list --filter="name=(instance-${ZONES[0]})")
 
 logit "INFO" "Waiting SSH port to be open on master node instance-${ZONES[0]} on Public IP ${MASTER_IP}"
+
+while : ; do
+    if echo 'test open port 22' 2>/dev/null > "/dev/tcp/${MASTER_IP}/22"; then echo "SSH port open on master node instance-${ZONES[0]} on Public IP ${MASTER_IP}"; break; fi
+    sleep 1
+done
 
 install_success=1
 while [ ${install_success} -ne 0 ] ; do

@@ -6,7 +6,7 @@ metadata:
   name: grafana
 spec:
   ports:
-  - port: 443
+  - port: 4433
     name: https
     targetPort: 3000
   selector:
