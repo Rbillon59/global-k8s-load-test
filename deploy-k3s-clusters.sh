@@ -73,27 +73,27 @@ fi
 source "${PWD}/scenario/${jmeter_scenario_name}/.env"
 
 if [ -z "${ZONES}" ]; then
-    logit "ERROR" "The ZONES need to be set in the .env file of your scenario. It will define where to privision GCP instances"
+    logit "ERROR" "The ZONES need to be set in the .env file of your scenario. It will define where to provision GCP instances"
     exit 1
 fi
 
 if [ -z "${MACHINE_TYPE}" ]; then
-    logit "WARN" "MACHINY_TYPE variable net set, applying default : e2-standard-4"
+    logit "WARN" "MACHINE_TYPE variable not set, applying default : e2-standard-4"
     MACHINE_TYPE="e2-standard-4"
 fi
 
 if [ -z "${NETWORK_NAME}" ]; then
-    logit "WARN" "NETWORK_NAME variable net set, applying default : k3s-network"
+    logit "WARN" "NETWORK_NAME variable not set, applying default : k3s-network"
     NETWORK_NAME="k3s-network"
 fi
 
 if [ -z "${MACHINE_NETWORK_TAG}" ]; then
-    logit "WARN" "MACHINE_NETWORK_TAG variable net set, applying default : k3s"
+    logit "WARN" "MACHINE_NETWORK_TAG variable not set, applying default : k3s"
     MACHINE_NETWORK_TAG="k3s"
 fi
 
 if [ -z "${MACHINE_DISK_SIZE}" ]; then
-    logit "WARN" "MACHINE_DISK_SIZE variable net set, applying default : 10G"
+    logit "WARN" "MACHINE_DISK_SIZE variable not set, applying default : 10G"
     MACHINE_DISK_SIZE="10GB"
 fi
 
@@ -236,8 +236,8 @@ for zone in "${ZONES[@]}"; do
             sleep 1
         done
 
-        ./k3sup join --ip "$AGENT_IP" \
-            --server-ip "$MASTER_IP" \
+        ./k3sup join --ip "${AGENT_IP}" \
+            --server-ip "${MASTER_IP}" \
             --ssh-key "${gcp_ssh_key_path}" \
             --user "${gcp_ssh_user}" &
     fi
@@ -245,7 +245,7 @@ done
 
 wait 
 logit "INFO" "All agents have been provisionned and installed"
-logit "INFO" "Checking if everything work"
+logit "INFO" "Checking if everything is working"
 export KUBECONFIG="$PWD/master-node-config"
 
 expected_node_number=${#ZONES[@]}
